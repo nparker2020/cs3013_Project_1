@@ -1,5 +1,5 @@
 //Eva Bruklich & Noah Parker, Boring Commander
-// CS3013 -- Written C19
+// CS3013 -- Written C20
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
