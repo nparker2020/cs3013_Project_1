@@ -3,13 +3,14 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <sys/time.h>
-
+#include <sys/resource.h>
 
 int main(int argc, char *argv[]) 
 {
 	struct timeval beforeTime, afterTime;
 	gettimeofday(&beforeTime, NULL);
-
+	struct rusage whoamiUsage;
+	struct 
 	int rc = fork();
 	if (rc < 0) 
 	{
