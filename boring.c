@@ -31,7 +31,8 @@ int main(int argc, char *argv[])
 		int after_time_value = afterTime.tv_usec;
 		int difference = after_time_value - start_time_value;
 		difference = difference/1000;
-		getrusage(rc, &whoamiUsage);
+		
+		getrusage(RUSAGE_CHILDREN, &whoamiUsage);
 		long pgFaults = whoamiUsage.ru_majflt;
 		long unPgs = whoamiUsage.ru_minflt;
 		printf("-- Statistics --\n");
