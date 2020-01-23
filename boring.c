@@ -9,8 +9,7 @@ int main(int argc, char *argv[])
 {
 	struct timeval beforeTime, afterTime;
 	gettimeofday(&beforeTime, NULL);
-	struct rusage whoamiUsage;
-	struct 
+	struct rusage whoamiUsage; 
 	int rc = fork();
 	if (rc < 0) 
 	{
@@ -32,8 +31,13 @@ int main(int argc, char *argv[])
 		int after_time_value = afterTime.tv_usec;
 		int difference = after_time_value - start_time_value;
 		difference = difference/1000;
+		getrusage(rc, &whoamiUsage);
+		long pgFaults = whoamiUsage.ru_majflt;
+		long unPgs = whoamiUsage.ru_minflt;
 		printf("-- Statistics --\n");
 		printf("Elapsed time: %d milliseconds\n", difference);
+		printf("Page Faults: %ld\n", pgFaults);
+		printf("Page Faults (reclaimed): %ld\n", unPgs);
 		printf("Parent Process Completed.\n");
 	}
 	
