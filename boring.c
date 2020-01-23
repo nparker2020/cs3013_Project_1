@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 	}else if(rc == 0) 
 	{
 		//child process created.		
-		printf("Child Process Created!\n");
+		printf("Running command: whoami\n");
 		char * args[2];
 		args[0] = "whoami";
 		args[1] = NULL;
@@ -35,10 +35,13 @@ int main(int argc, char *argv[])
 		getrusage(RUSAGE_CHILDREN, &whoamiUsage);
 		long pgFaults = whoamiUsage.ru_majflt;
 		long unPgs = whoamiUsage.ru_minflt;
+		printf("\n");
 		printf("-- Statistics --\n");
 		printf("Elapsed time: %d milliseconds\n", difference);
 		printf("Page Faults: %ld\n", pgFaults);
 		printf("Page Faults (reclaimed): %ld\n", unPgs);
+		printf("-- End of Statistics --\n");
+		printf("\n");
 		printf("Parent Process Completed.\n");
 	}
 	
