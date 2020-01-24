@@ -44,7 +44,6 @@ int main(int argc, char *argv[])
 		printf("Page Faults (reclaimed): %ld\n", unPgs);
 		printf("-- End of Statistics --\n");
 		printf("\n");
-		printf("Parent Process Completed.\n");
 	}
 
 	rc = fork();
@@ -79,7 +78,6 @@ int main(int argc, char *argv[])
 		printf("Page Faults (reclaimed): %ld\n", unPgs);
 		printf("-- End of Statistics --\n");
 		printf("\n");
-		printf("Parent Process Completed.\n");
 	}
 
 	rc = fork();
@@ -89,7 +87,7 @@ int main(int argc, char *argv[])
 	}else if(rc == 0) 
 	{
 		//child process created.		
-		printf("Running command: last\n");
+		printf("Running command: ls -al /home\n");
 		char * args[4];
 		args[0] = "ls";
 		args[1] = "-al";
@@ -116,7 +114,6 @@ int main(int argc, char *argv[])
 		printf("Page Faults (reclaimed): %ld\n", unPgs);
 		printf("-- End of Statistics --\n");
 		printf("\n");
-		printf("Parent Process Completed.\n");
 	}
 	
 	return 0;
