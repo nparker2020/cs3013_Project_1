@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 			if(line[i] == '\n') 
 			{
 				line[i] = '\0';
-				printf("newline replaced. \n");	
+				//printf("newline replaced. \n");	
 			}
 		}
 	
@@ -39,9 +39,9 @@ int main(int argc, char *argv[])
 		commandWord = strtok(line, " ");
 		splitWord = commandWord;
 		char * arguments[32];
-		int count = 0;
-		printf("command: %s\n", commandWord);
-		
+		int count = 1;
+		//printf("command: %s\n", commandWord);
+		arguments[0] = commandWord;
 		while( splitWord != NULL)
 		{
 			//printf("word: %s\n", splitWord);
@@ -50,10 +50,11 @@ int main(int argc, char *argv[])
 			{
 				arguments[count] = malloc(strlen(splitWord) + 1);
 				strcpy(arguments[count], splitWord);
-				printf("argument: %s \n", arguments[count]);
+				//printf("argument: %s \n", arguments[count]);
 				count++;		
 			}
 		}
+
 		int rc = fork();
 		if (rc < 0) 
 		{
@@ -61,7 +62,12 @@ int main(int argc, char *argv[])
 		}else if(rc == 0) 
 		{
 			//child process created.		
-			printf("Running command: %s\n", commandWord);
+			printf("Running command: %s ", commandWord);
+			printf("with arguments: \n");
+			for(int i = 1; i < count; i++) 
+			{
+				printf("%s\n", arguments[i]);
+			}
 			arguments[count+1] = NULL;
 			execvp(commandWord, arguments);
 		}
@@ -72,5 +78,6 @@ int main(int argc, char *argv[])
 		
 	}
 	int rc_wait = wait(NULL);
+
 	return 0;
 }
