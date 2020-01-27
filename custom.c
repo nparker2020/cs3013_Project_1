@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
 	int length = 0;	
 	while( (length = getline(&line, &buffer_size, customFile)) != -1) 
 	{
+				
 		for(int i = 0; i < length; i++)
 		{
 			if(line[i] == '\n') 
@@ -66,9 +67,10 @@ int main(int argc, char *argv[])
 			printf("with arguments: \n");
 			for(int i = 1; i < count; i++) 
 			{
-				printf("%s\n", arguments[i]);
+				printf("[%s]\n", arguments[i]);
 			}
-			arguments[count+1] = NULL;
+			arguments[count] = NULL;
+			char* args[3];
 			execvp(commandWord, arguments);
 		}
 		else
