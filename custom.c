@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
 	}
 	char* line = NULL;
 	int buffer_size = 0;
+	int count = 0;
 	//when line == NULL && buffer_size == 0, the getline method
 	//will automatically allocate a buffer of the correct size.
 	while( getline(&line, &buffer_size, customFile) != -1) 
@@ -29,6 +30,8 @@ int main(int argc, char *argv[])
 		splitWord = commandWord;
 		char * arguments[32];
 		int count = 0;
+		printf("command: %s\n", commandWord);
+			
 		while( splitWord != NULL)
 		{
 			//printf("word: %s\n", splitWord);
@@ -41,8 +44,8 @@ int main(int argc, char *argv[])
 				count++;		
 			}	
 		}
-		printf("command: %s\n", commandWord);
+		
 	}
-
+		
 	return 0;
 }
