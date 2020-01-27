@@ -1,4 +1,3 @@
 ls -a
-test line
-whatever -b
-blah -c
+pwd
+uname -r

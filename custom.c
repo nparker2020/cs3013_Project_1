@@ -42,10 +42,25 @@ int main(int argc, char *argv[])
 				strcpy(arguments[count], splitWord);
 				printf("argument: %s \n", arguments[count]);
 				count++;		
-			}	
+			}
+		}
+		int rc = fork();
+		if (rc < 0) 
+		{
+			printf("fork failed!\n");
+		}else if(rc == 0) 
+		{
+			//child process created.		
+			printf("Running command: %s\n", commandWord);
+			arguments[count+1] = NULL;
+			execvp(commandWord, arguments);
+		}
+		else
+		{
+			printf("Parent Process loop. \n");
 		}
 		
 	}
-		
+	int rc_wait = wait(NULL);
 	return 0;
 }
