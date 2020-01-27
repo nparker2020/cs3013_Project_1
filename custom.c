@@ -22,8 +22,18 @@ int main(int argc, char *argv[])
 	int count = 0;
 	//when line == NULL && buffer_size == 0, the getline method
 	//will automatically allocate a buffer of the correct size.
-	while( getline(&line, &buffer_size, customFile) != -1) 
+	int length = 0;	
+	while( (length = getline(&line, &buffer_size, customFile)) != -1) 
 	{
+		for(int i = 0; i < length; i++)
+		{
+			if(line[i] == '\n') 
+			{
+				line[i] = '\0';
+				printf("newline replaced. \n");	
+			}
+		}
+	
 		char* splitWord = 0;
 		char* commandWord = NULL;		
 		commandWord = strtok(line, " ");
@@ -31,7 +41,7 @@ int main(int argc, char *argv[])
 		char * arguments[32];
 		int count = 0;
 		printf("command: %s\n", commandWord);
-			
+		
 		while( splitWord != NULL)
 		{
 			//printf("word: %s\n", splitWord);
