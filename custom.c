@@ -56,30 +56,44 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		int rc = fork();
-		if (rc < 0) 
+		if(!strcmp(commandWord, "ccd")) 
 		{
-			printf("fork failed!\n");
-		}else if(rc == 0) 
+			printf("changing directory... [%s] \n", commandWord);
+			chdir(arguments[1]);
+		}else if(!strcmp(commandWord, "pwd")) 
 		{
-			//child process created.		
-			printf("Running command: %s ", commandWord);
-			printf("with arguments: \n");
-			for(int i = 1; i < count; i++) 
+			printf("running getcwd()...\n");
+			char pathString[256];
+			getcwd(pathString, sizeof(pathString));								
+		}else
+		{
+			int rc = fork();
+			if (rc < 0) 
 			{
-				printf("[%s]\n", arguments[i]);
+				printf("fork failed!\n");
+			}else if(rc == 0) 
+			{
+				//child process created.		
+				printf("Running command: [%s] ", commandWord);
+				printf("with arguments: \n");
+				for(int i = 1; i < count; i++) 
+				{
+					printf("[%s]\n", arguments[i]);
+				}
+				arguments[count] = NULL;
+				char* args[3];
+				execvp(arguments[0], arguments);
 			}
-			arguments[count] = NULL;
-			char* args[3];
-			execvp(commandWord, arguments);
+			else
+			{
+				int rc_wait = wait(NULL);
+				printf("-- Statistics --\n");
+			}
+				
 		}
-		else
-		{
-			printf("Parent Process loop. \n");
-		}
+
 		
 	}
-	int rc_wait = wait(NULL);
 
 	return 0;
 }

@@ -1,3 +1,4 @@
-uname -r
+ccd ..
 pwd
 ls -a
+lspci
