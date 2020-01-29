@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 		lineNumbers[i] = value;
 		printf("lineNumbers[%d]: %d\n", i, lineNumbers[i]);	
 	}
-	int currentLineNumber = 0;
+	int currentLineNumber = 1;
 	while( (length = getline(&line, &buffer_size, customFile)) != -1) 
 	{
 		//parse through line and replace newlines with none character.		
@@ -93,6 +93,7 @@ int main(int argc, char *argv[])
 			//print statics here?							
 		}else
 		{
+			gettimeofday(&beforeTime, NULL);
 			int rc = fork();
 			if (rc < 0) 
 			{
@@ -101,11 +102,11 @@ int main(int argc, char *argv[])
 			{
 				//child process created.		
 			
-		/*		printf("with arguments: \n");
+				printf("with arguments: \n");
 				for(int i = 1; i < count; i++) 
 				{
 					printf("[%s]\n", arguments[i]);
-				}*/
+				}
 				arguments[count] = NULL;
 				char* args[3];
 				execvp(arguments[0], arguments);
