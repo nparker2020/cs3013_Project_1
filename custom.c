@@ -25,13 +25,12 @@ int main(int argc, char *argv[])
 	int length = 0;	
 	while( (length = getline(&line, &buffer_size, customFile)) != -1) 
 	{
-				
+		//parse through line and replace newlines with none character.		
 		for(int i = 0; i < length; i++)
 		{
 			if(line[i] == '\n') 
 			{
 				line[i] = '\0';
-				//printf("newline replaced. \n");	
 			}
 		}
 	
@@ -41,30 +40,29 @@ int main(int argc, char *argv[])
 		splitWord = commandWord;
 		char * arguments[32];
 		int count = 1;
-		//printf("command: %s\n", commandWord);
 		arguments[0] = commandWord;
 		while( splitWord != NULL)
 		{
-			//printf("word: %s\n", splitWord);
 			splitWord = strtok(NULL, " ");
 			if(splitWord != NULL) 
 			{
 				arguments[count] = malloc(strlen(splitWord) + 1);
 				strcpy(arguments[count], splitWord);
-				//printf("argument: %s \n", arguments[count]);
 				count++;		
 			}
 		}
 
+		printf("Running command: %s \n", line);
 		if(!strcmp(commandWord, "ccd")) 
 		{
-			printf("changing directory... [%s] \n", commandWord);
+			//printf("changing directory... [%s] \n", commandWord);
 			chdir(arguments[1]);
 		}else if(!strcmp(commandWord, "pwd")) 
 		{
-			printf("running getcwd()...\n");
+			//printf("running getcwd()...\n");
 			char pathString[256];
-			getcwd(pathString, sizeof(pathString));								
+			getcwd(pathString, sizeof(pathString));
+			//print statics here?							
 		}else
 		{
 			int rc = fork();
@@ -74,18 +72,19 @@ int main(int argc, char *argv[])
 			}else if(rc == 0) 
 			{
 				//child process created.		
-				printf("Running command: [%s] ", commandWord);
-				printf("with arguments: \n");
+			
+		/*		printf("with arguments: \n");
 				for(int i = 1; i < count; i++) 
 				{
 					printf("[%s]\n", arguments[i]);
-				}
+				}*/
 				arguments[count] = NULL;
 				char* args[3];
 				execvp(arguments[0], arguments);
 			}
 			else
 			{
+				//wait for child process to complete before printing stats
 				int rc_wait = wait(NULL);
 				printf("-- Statistics --\n");
 			}
