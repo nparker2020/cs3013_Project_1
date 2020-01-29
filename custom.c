@@ -61,11 +61,13 @@ int main(int argc, char *argv[])
 		{
 			//printf("changing directory... [%s] \n", commandWord);
 			chdir(arguments[1]);
+			printf("Changed to directory: %s \n", arguments[1]);
 		}else if(!strcmp(commandWord, "pwd")) 
 		{
 			//printf("running getcwd()...\n");
 			char pathString[256];
 			getcwd(pathString, sizeof(pathString));
+			printf("Current working directory: %s \n", pathString);
 			//print statics here?							
 		}else
 		{
