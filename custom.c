@@ -9,6 +9,10 @@
 
 int main(int argc, char *argv[]) 
 {
+	struct timeval beforeTime, afterTime;
+	gettimeofday(&beforeTime, NULL);
+	struct rusage globalUsage;
+
 	char* fileName = "custom.txt";
 	FILE* customFile = fopen(fileName, "r");
 	
@@ -86,7 +90,22 @@ int main(int argc, char *argv[])
 			{
 				//wait for child process to complete before printing stats
 				int rc_wait = wait(NULL);
+				gettimeofday(&afterTime, NULL);
+				int start_time_value = beforeTime.tv_usec;
+				int after_time_value = afterTime.tv_usec;
+				int diff = after_time_value - start_time_value; 
+				diff = diff/1000;
+			
+				getrusage(RUSAGE_CHILDREN, &globalUsage);
+				long pgFaults = globalUsage.ru_majflt;
+				long unpgs = globalUsage.ru_minflt;
+				printf("\n");
 				printf("-- Statistics --\n");
+				printf("Elapsed time: %d milliseconds\n", diff);
+				printf("Page Faults: %ld\n", pgFaults);
+				printf("Page Faults (reclaimed): %ld\n", unpgs); 
+				printf("-- End of Statistics --\n");
+				printf("\n"); 
 			}
 				
 		}
