@@ -13,6 +13,13 @@ int main(int argc, char *argv[])
 	gettimeofday(&beforeTime, NULL);
 	struct rusage globalUsage;
 
+	struct processInfo 
+	{
+		int pid;
+		struct timeval beforeTime;
+		char* command;
+	};
+
 	char* fileName = "multi.txt";
 	FILE* customFile = fopen(fileName, "r");
 	
@@ -38,6 +45,8 @@ int main(int argc, char *argv[])
 	}
 
 	char backgroundCommands[32][128];
+	// 32 array of processID
+	struct processInfo backgroundProcesses[32];
 
 	int backgroundCount = 0;
 	int runningBackgroundProcesses = 0;
@@ -67,6 +76,7 @@ int main(int argc, char *argv[])
 		{
 						
 			strcpy(backgroundCommands[backgroundCount], line);
+			backgroundProcesses[backgroundCount].command = backgroundCommands[backgroundCount];
 			
 			//backgroundCommands[backgroundCount] = *commandValue;
 			backgroundCount++;
@@ -109,12 +119,13 @@ int main(int argc, char *argv[])
 			printf("-- Background Processes --\n");
 			for(int i = 0; i < argc; i++) 
 			{
-				printf("[%d] %s \n", i, backgroundCommands[i]);
+				printf("[%d] %s \n", i, backgroundCommands[i]); 
 			}
 		}
 		else
 		{
 			gettimeofday(&beforeTime, NULL);
+			gettimeofday(&backgroundProcesses[backgroundCount].beforeTime, NULL);
 
 			int rc = fork();
 			if (rc < 0) 
@@ -159,7 +170,8 @@ int main(int argc, char *argv[])
 					printf("\n");				
 				}else{
 					//printf("running process in the background. \n");
-					struct rusage backgroundUsage;			
+					struct rusage backgroundUsage;	
+					backgroundProcesses[backgroundCount].pid = rc;		
 					
 					while(1) 
 					{
@@ -175,14 +187,28 @@ int main(int argc, char *argv[])
 							runningBackgroundProcesses--;
 							long pgFaults = backgroundUsage.ru_majflt;
 							long unpgs = backgroundUsage.ru_minflt;
-							for(int i = 0; i < argc; i++)
+							struct timeval afterTime;
+							struct timeval beforeTime;
+							for(int i = 0; i < backgroundCount; i++)
 							{
+								if(backgroundProcesses[i].pid == result) 
+								{
+									printf("-- Job Complete [%d: %s] --\n", backgroundProcesses[i].pid, backgroundProcesses[i].command);
+									beforeTime = backgroundProcesses[i].beforeTime;								
+								}
 							}
+							gettimeofday(&afterTime, NULL); 
+							 
+							int start_time_value = beforeTime.tv_usec;
+							int after_time_value = afterTime.tv_usec;
+							int diff = after_time_value - start_time_value; 
+							diff = diff/1000;
+
 							//printf("-- Job Complete [%d: %s] --\n", 0, commandLine);
 							printf("Process ID: %d", result);
 							printf("\n");
 							printf("-- Statistics --\n");
-							//printf("Elapsed time: %d milliseconds\n", diff);
+							printf("Elapsed time: %d milliseconds\n", diff);
 							printf("Page Faults: %ld\n", pgFaults);
 							printf("Page Faults (reclaimed): %ld\n", unpgs); 
 							printf("-- End of Statistics --\n");
@@ -212,9 +238,22 @@ int main(int argc, char *argv[])
 			//figure out which command finished and remove it from the background commands array							
 			long pgFaults = backgroundUsage.ru_majflt;
 			long unpgs = backgroundUsage.ru_minflt;
-			for(int i = 0; i < argc; i++)
-			{
-			}
+			struct timeval afterTime;
+							struct timeval beforeTime;
+							for(int i = 0; i < backgroundCount; i++)
+							{
+								if(backgroundProcesses[i].pid == result) 
+								{
+									printf("-- Job Complete [%d: %s] --\n", backgroundProcesses[i].pid, backgroundProcesses[i].command);
+									beforeTime = backgroundProcesses[i].beforeTime;								
+								}
+							}
+							gettimeofday(&afterTime, NULL);
+
+							int start_time_value = beforeTime.tv_usec;
+							int after_time_value = afterTime.tv_usec;
+							int diff = after_time_value - start_time_value; 
+							diff = diff/1000;
 			//printf("-- Job Complete [%d: %s] --\n", 0, commandLine);
 			printf("Process ID: %d", result);
 			printf("\n");
