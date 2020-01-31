@@ -34,8 +34,13 @@ int main(int argc, char *argv[])
 	{
 		int value = atoi(argv[i]);
 		lineNumbers[i] = value;
-		printf("lineNumbers[%d]: %d\n", i, lineNumbers[i]);	
+		//printf("lineNumbers[%d]: %d\n", i, lineNumbers[i]);	
 	}
+
+	char backgroundCommands[32][128];
+
+	int backgroundCount = 0;
+	int runningBackgroundProcesses = 0;
 	int currentLineNumber = 1;
 	while( (length = getline(&line, &buffer_size, customFile)) != -1) 
 	{
@@ -57,7 +62,17 @@ int main(int argc, char *argv[])
 				background = 1;			
 			}
 		}
-		
+		printf("Running command: %s \n", line);
+		if(background == 1) 
+		{
+						
+			strcpy(backgroundCommands[backgroundCount], line);
+			
+			//backgroundCommands[backgroundCount] = *commandValue;
+			backgroundCount++;
+			runningBackgroundProcesses++;
+			printf("Background: ID [%d]: %s \n", backgroundCount, line);
+		}
 
 		char* splitWord = 0;
 		char* commandWord = NULL;		
@@ -76,8 +91,6 @@ int main(int argc, char *argv[])
 				count++;		
 			}
 		}
-
-		printf("Running command: %s \n", line);
 		
 		if(!strcmp(commandWord, "ccd")) 
 		{
@@ -91,9 +104,18 @@ int main(int argc, char *argv[])
 			getcwd(pathString, sizeof(pathString));
 			printf("Current working directory: %s \n", pathString);
 			//print statics here?							
-		}else
+		}else if(!strcmp(commandWord, "cproclist")) 
+		{
+			printf("-- Background Processes --\n");
+			for(int i = 0; i < argc; i++) 
+			{
+				printf("[%d] %s \n", i, backgroundCommands[i]);
+			}
+		}
+		else
 		{
 			gettimeofday(&beforeTime, NULL);
+
 			int rc = fork();
 			if (rc < 0) 
 			{
@@ -101,12 +123,12 @@ int main(int argc, char *argv[])
 			}else if(rc == 0) 
 			{
 				//child process created.		
-			
+				/*
 				printf("with arguments: \n");
 				for(int i = 1; i < count; i++) 
 				{
 					printf("[%s]\n", arguments[i]);
-				}
+				}*/
 				arguments[count] = NULL;
 				char* args[3];
 				execvp(arguments[0], arguments);
@@ -114,6 +136,7 @@ int main(int argc, char *argv[])
 			else
 			{
 				//wait for child process to complete before printing stats
+				//here, rc == the child's process ID				
 				if(background == 0) 
 				{
 					int rc_wait = wait(NULL);
@@ -134,6 +157,38 @@ int main(int argc, char *argv[])
 					printf("Page Faults (reclaimed): %ld\n", unpgs); 
 					printf("-- End of Statistics --\n");
 					printf("\n");				
+				}else{
+					//printf("running process in the background. \n");
+					struct rusage backgroundUsage;			
+					
+					while(1) 
+					{
+			
+						int result = wait3(NULL, WNOHANG, &backgroundUsage);
+						if(result == -1 || result == 0) 
+						{
+							break;
+						}else
+						{
+							//backgroundCount--;
+							//figure out which command finished and remove it from the background commands array							
+							runningBackgroundProcesses--;
+							long pgFaults = backgroundUsage.ru_majflt;
+							long unpgs = backgroundUsage.ru_minflt;
+							for(int i = 0; i < argc; i++)
+							{
+							}
+							//printf("-- Job Complete [%d: %s] --\n", 0, commandLine);
+							printf("Process ID: %d", result);
+							printf("\n");
+							printf("-- Statistics --\n");
+							//printf("Elapsed time: %d milliseconds\n", diff);
+							printf("Page Faults: %ld\n", pgFaults);
+							printf("Page Faults (reclaimed): %ld\n", unpgs); 
+							printf("-- End of Statistics --\n");
+							printf("\n");				
+						}				
+					}			
 				}
 				 
 			}
@@ -142,6 +197,36 @@ int main(int argc, char *argv[])
 		
 		currentLineNumber++;
 	}
+
+	struct rusage backgroundUsage;		
+	while(1) 
+	{
+			
+		int result = wait3(NULL, WNOHANG, &backgroundUsage);
+		if(runningBackgroundProcesses <=0) 
+		{
+			break;
+		}else
+		{
+			runningBackgroundProcesses--;
+			//figure out which command finished and remove it from the background commands array							
+			long pgFaults = backgroundUsage.ru_majflt;
+			long unpgs = backgroundUsage.ru_minflt;
+			for(int i = 0; i < argc; i++)
+			{
+			}
+			//printf("-- Job Complete [%d: %s] --\n", 0, commandLine);
+			printf("Process ID: %d", result);
+			printf("\n");
+			printf("-- Statistics --\n");
+			//printf("Elapsed time: %d milliseconds\n", diff);
+			printf("Page Faults: %ld\n", pgFaults);
+			printf("Page Faults (reclaimed): %ld\n", unpgs); 
+			printf("-- End of Statistics --\n");
+			printf("\n");				
+		}				
+	}			
+
 
 	return 0;
 }
