@@ -10,7 +10,6 @@
 int main(int argc, char *argv[]) 
 {
 	struct timeval beforeTime, afterTime;
-	gettimeofday(&beforeTime, NULL);
 	struct rusage globalUsage;
 
 	struct processInfo 
@@ -79,7 +78,7 @@ int main(int argc, char *argv[])
 			backgroundProcesses[backgroundCount].command = backgroundCommands[backgroundCount];
 			
 			//backgroundCommands[backgroundCount] = *commandValue;
-			
+			gettimeofday(&backgroundProcesses[backgroundCount].beforeTime, NULL);
 			runningBackgroundProcesses++;
 			printf("Background: ID [%d]: %s \n", backgroundCount, line);
 		}
@@ -121,17 +120,22 @@ int main(int argc, char *argv[])
 			{
 				printf("[%d] %s \n", i, backgroundCommands[i]); 
 			}
+			printf("\n");
 		}
 		else
 		{
 			gettimeofday(&beforeTime, NULL);
-			gettimeofday(&backgroundProcesses[backgroundCount].beforeTime, NULL);
+			if(background == 1) 
+			{
+				//beforetime used to go here.
+			}			
+
 			struct timeval nonBackgroundBefore;
 			int rc = fork();
 			if (rc < 0) 
 			{
 				printf("fork failed!\n");
-			}else if(rc == 0) 
+			}else if(rc == 0)
 			{
 				
 				arguments[count] = NULL;
@@ -144,26 +148,29 @@ int main(int argc, char *argv[])
 				//here, rc == the child's process ID				
 				if(background == 0) 
 				{
-					int rc_wait = wait(NULL);
-
+					//we are not running in the background so we just wait and hang until we are done.
+					
+					int rc_wait = wait3(NULL, 0, &globalUsage);
+					
 					gettimeofday(&afterTime, NULL);
 					int start_time_value = beforeTime.tv_usec;
 					int after_time_value = afterTime.tv_usec;
-					int diff = after_time_value - start_time_value; 
-					diff = diff/1000;
-				
+
+					int start_time_seconds = beforeTime.tv_sec;
+					int after_time_seconds = afterTime.tv_sec;
+					long difference = (after_time_value - start_time_value)/1000 + (after_time_seconds - start_time_seconds)*1000;				
+					
 					getrusage(RUSAGE_CHILDREN, &globalUsage);
 					long pgFaults = globalUsage.ru_majflt;
 					long unpgs = globalUsage.ru_minflt;
 					printf("\n");
 					printf("-- Statistics --\n");
-					printf("Elapsed time: %d milliseconds\n", diff);
+					printf("Elapsed time: %ld milliseconds\n", difference);
 					printf("Page Faults: %ld\n", pgFaults);
 					printf("Page Faults (reclaimed): %ld\n", unpgs); 
 					printf("-- End of Statistics --\n");
 					printf("\n");				
 				}else{
-					//printf("running process in the background. \n");
 					struct rusage backgroundUsage;	
 					backgroundProcesses[backgroundCount].pid = rc;		
 					backgroundCount++;
@@ -176,33 +183,36 @@ int main(int argc, char *argv[])
 							break;
 						}else
 						{
-							//backgroundCount--;
-							//figure out which command finished and remove it from the background commands array							
+							
 							runningBackgroundProcesses--;
 							long pgFaults = backgroundUsage.ru_majflt;
 							long unpgs = backgroundUsage.ru_minflt;
-							struct timeval afterTime;
-							struct timeval beforeTime;
+
+							
+							gettimeofday(&afterTime, NULL); 
+							struct timeval backgroundBefore;
+							int backgroundIndex = 0;
 							for(int i = 0; i < backgroundCount; i++)
 							{
 								if(backgroundProcesses[i].pid == result) 
 								{
-									printf("-- Job Complete [%d: %s] --\n", backgroundProcesses[i].pid, backgroundProcesses[i].command);
-								beforeTime = backgroundProcesses[i].beforeTime;								
+									printf("-- Job Complete [%d: %s] --\n", i, backgroundProcesses[i].command);		
+									backgroundIndex = i;
+									backgroundBefore = backgroundProcesses[i].beforeTime;								printf("backgroundIndex:  %d \n", backgroundIndex);
 								}
 							}
-							gettimeofday(&afterTime, NULL); 
-							 
-							int start_time_value = beforeTime.tv_usec;
+							
+							
+							int start_time_value = backgroundProcesses[backgroundIndex].beforeTime.tv_usec;
 							int after_time_value = afterTime.tv_usec;
-							int diff = after_time_value - start_time_value; 
-							diff = diff/1000;
-
-							//printf("-- Job Complete [%d: %s] --\n", 0, commandLine);
-							printf("Process ID: %d", result);
+							int start_time_seconds = backgroundProcesses[backgroundIndex].beforeTime.tv_sec;
+							int after_time_seconds = afterTime.tv_sec;
+							//calculate the difference between the seconds and microseconds values and convert to milliseconds
+							long difference = (after_time_value - start_time_value)/1000 + (after_time_seconds - start_time_seconds)*1000;		
+							printf("Process ID: %d \n", result);
 							printf("\n");
 							printf("-- Statistics --\n");
-							printf("Elapsed time: %d milliseconds\n", diff);
+							printf("Elapsed time: %ld milliseconds\n", difference);
 							printf("Page Faults: %ld\n", pgFaults);
 							printf("Page Faults (reclaimed): %ld\n", unpgs); 
 							printf("-- End of Statistics --\n");
@@ -234,16 +244,17 @@ int main(int argc, char *argv[])
 			
 		
 			runningBackgroundProcesses--;
-			//figure out which command finished and remove it from the background commands array							
+							
 			long pgFaults = backgroundUsage.ru_majflt;
 			long unpgs = backgroundUsage.ru_minflt;
 			struct timeval afterTime;
 			struct timeval beforeTime;
+			int backgroundIndex = 0;
 			for(int i = 0; i < backgroundCount; i++)
 			{
 				if(backgroundProcesses[i].pid == result) 
 				{
-					printf("-- Job Complete [%d: %s] --\n", backgroundProcesses[i].pid, backgroundProcesses[i].command);
+					printf("-- Job Complete [%d: %s] --\n", i, backgroundProcesses[i].command);
 					beforeTime = backgroundProcesses[i].beforeTime;								
 				}
 			}
@@ -251,21 +262,18 @@ int main(int argc, char *argv[])
 
 			int start_time_value = beforeTime.tv_usec;
 			int after_time_value = afterTime.tv_usec;
-			int diff = after_time_value - start_time_value; 
-			diff = diff/1000;
-			//printf("-- Job Complete [%d: %s] --\n", 0, commandLine);
-			printf("Process ID: %d", result);
+			int start_time_seconds = beforeTime.tv_sec;
+			int after_time_seconds = afterTime.tv_sec;
+			long difference = (after_time_value - start_time_value)/1000 + (after_time_seconds - start_time_seconds)*1000;		
+			
+			printf("Process ID: %d \n", result);
 			printf("\n");
 			printf("-- Statistics --\n");
-			printf("Elapsed time: %d milliseconds\n", diff);
+			printf("Elapsed time: %ld milliseconds\n", difference);
 			printf("Page Faults: %ld\n", pgFaults);
 			printf("Page Faults (reclaimed): %ld\n", unpgs); 
 			printf("-- End of Statistics --\n");
 			printf("\n");			
-
-
-
-
 
 			}		
 				
