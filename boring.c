@@ -31,15 +31,17 @@ int main(int argc, char *argv[])
 		gettimeofday(&afterTime, NULL);
 		int start_time_value = beforeTime.tv_usec;
 		int after_time_value = afterTime.tv_usec;
-		int difference = after_time_value - start_time_value;
-		difference = difference/1000;
+		int start_time_seconds = beforeTime.tv_sec;
+		int after_time_seconds = afterTime.tv_sec;
+
+		long difference = (after_time_value - start_time_value)/1000 + (after_time_seconds - start_time_seconds)*1000;
 		
 		getrusage(RUSAGE_CHILDREN, &globalUsage);
 		long pgFaults = globalUsage.ru_majflt;
 		long unPgs = globalUsage.ru_minflt;
 		printf("\n");
 		printf("-- Statistics --\n");
-		printf("Elapsed time: %d milliseconds\n", difference);
+		printf("Elapsed time: %ld milliseconds\n", difference);
 		printf("Page Faults: %ld\n", pgFaults);
 		printf("Page Faults (reclaimed): %ld\n", unPgs);
 		printf("-- End of Statistics --\n");
@@ -65,15 +67,17 @@ int main(int argc, char *argv[])
 		gettimeofday(&afterTime, NULL);
 		int start_time_value = beforeTime.tv_usec;
 		int after_time_value = afterTime.tv_usec;
-		int difference = after_time_value - start_time_value;
-		difference = difference/1000;
+		int start_time_seconds = beforeTime.tv_sec;
+		int after_time_seconds = afterTime.tv_sec;
+
+		long difference = (after_time_value - start_time_value)/1000 + (after_time_seconds - start_time_seconds)*1000;
 		
 		getrusage(RUSAGE_CHILDREN, &globalUsage);
 		long pgFaults = globalUsage.ru_majflt;
 		long unPgs = globalUsage.ru_minflt;
 		printf("\n");
 		printf("-- Statistics --\n");
-		printf("Elapsed time: %d milliseconds\n", difference);
+		printf("Elapsed time: %ld milliseconds\n", difference);
 		printf("Page Faults: %ld\n", pgFaults);
 		printf("Page Faults (reclaimed): %ld\n", unPgs);
 		printf("-- End of Statistics --\n");
@@ -101,15 +105,17 @@ int main(int argc, char *argv[])
 		gettimeofday(&afterTime, NULL);
 		int start_time_value = beforeTime.tv_usec;
 		int after_time_value = afterTime.tv_usec;
-		int difference = after_time_value - start_time_value;
-		difference = difference/1000;
+		int start_time_seconds = beforeTime.tv_sec;
+		int after_time_seconds = afterTime.tv_sec;
+
+		long difference = (after_time_value - start_time_value)/1000 + (after_time_seconds - start_time_seconds)*1000;
 		
 		getrusage(RUSAGE_CHILDREN, &globalUsage);
 		long pgFaults = globalUsage.ru_majflt;
 		long unPgs = globalUsage.ru_minflt;
 		printf("\n");
 		printf("-- Statistics --\n");
-		printf("Elapsed time: %d milliseconds\n", difference);
+		printf("Elapsed time: %ld milliseconds\n", difference);
 		printf("Page Faults: %ld\n", pgFaults);
 		printf("Page Faults (reclaimed): %ld\n", unPgs);
 		printf("-- End of Statistics --\n");
