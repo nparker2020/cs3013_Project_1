@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 			backgroundProcesses[backgroundCount].command = backgroundCommands[backgroundCount];
 			
 			//backgroundCommands[backgroundCount] = *commandValue;
-			backgroundCount++;
+			
 			runningBackgroundProcesses++;
 			printf("Background: ID [%d]: %s \n", backgroundCount, line);
 		}
@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
 		}else if(!strcmp(commandWord, "cproclist")) 
 		{
 			printf("-- Background Processes --\n");
-			for(int i = 0; i < argc; i++) 
+			for(int i = 0; i < backgroundCount; i++) 
 			{
 				printf("[%d] %s \n", i, backgroundCommands[i]); 
 			}
@@ -126,20 +126,14 @@ int main(int argc, char *argv[])
 		{
 			gettimeofday(&beforeTime, NULL);
 			gettimeofday(&backgroundProcesses[backgroundCount].beforeTime, NULL);
-
+			struct timeval nonBackgroundBefore;
 			int rc = fork();
 			if (rc < 0) 
 			{
 				printf("fork failed!\n");
 			}else if(rc == 0) 
 			{
-				//child process created.		
-				/*
-				printf("with arguments: \n");
-				for(int i = 1; i < count; i++) 
-				{
-					printf("[%s]\n", arguments[i]);
-				}*/
+				
 				arguments[count] = NULL;
 				char* args[3];
 				execvp(arguments[0], arguments);
@@ -172,7 +166,7 @@ int main(int argc, char *argv[])
 					//printf("running process in the background. \n");
 					struct rusage backgroundUsage;	
 					backgroundProcesses[backgroundCount].pid = rc;		
-					
+					backgroundCount++;
 					while(1) 
 					{
 			
@@ -194,7 +188,7 @@ int main(int argc, char *argv[])
 								if(backgroundProcesses[i].pid == result) 
 								{
 									printf("-- Job Complete [%d: %s] --\n", backgroundProcesses[i].pid, backgroundProcesses[i].command);
-									beforeTime = backgroundProcesses[i].beforeTime;								
+								beforeTime = backgroundProcesses[i].beforeTime;								
 								}
 							}
 							gettimeofday(&afterTime, NULL); 
@@ -222,6 +216,7 @@ int main(int argc, char *argv[])
 		}
 		
 		currentLineNumber++;
+		
 	}
 
 	struct rusage backgroundUsage;		
@@ -234,35 +229,46 @@ int main(int argc, char *argv[])
 			break;
 		}else
 		{
+			if(result > 0) 
+			{
+			
+		
 			runningBackgroundProcesses--;
 			//figure out which command finished and remove it from the background commands array							
 			long pgFaults = backgroundUsage.ru_majflt;
 			long unpgs = backgroundUsage.ru_minflt;
 			struct timeval afterTime;
-							struct timeval beforeTime;
-							for(int i = 0; i < backgroundCount; i++)
-							{
-								if(backgroundProcesses[i].pid == result) 
-								{
-									printf("-- Job Complete [%d: %s] --\n", backgroundProcesses[i].pid, backgroundProcesses[i].command);
-									beforeTime = backgroundProcesses[i].beforeTime;								
-								}
-							}
-							gettimeofday(&afterTime, NULL);
+			struct timeval beforeTime;
+			for(int i = 0; i < backgroundCount; i++)
+			{
+				if(backgroundProcesses[i].pid == result) 
+				{
+					printf("-- Job Complete [%d: %s] --\n", backgroundProcesses[i].pid, backgroundProcesses[i].command);
+					beforeTime = backgroundProcesses[i].beforeTime;								
+				}
+			}
+			gettimeofday(&afterTime, NULL);
 
-							int start_time_value = beforeTime.tv_usec;
-							int after_time_value = afterTime.tv_usec;
-							int diff = after_time_value - start_time_value; 
-							diff = diff/1000;
+			int start_time_value = beforeTime.tv_usec;
+			int after_time_value = afterTime.tv_usec;
+			int diff = after_time_value - start_time_value; 
+			diff = diff/1000;
 			//printf("-- Job Complete [%d: %s] --\n", 0, commandLine);
 			printf("Process ID: %d", result);
 			printf("\n");
 			printf("-- Statistics --\n");
-			//printf("Elapsed time: %d milliseconds\n", diff);
+			printf("Elapsed time: %d milliseconds\n", diff);
 			printf("Page Faults: %ld\n", pgFaults);
 			printf("Page Faults (reclaimed): %ld\n", unpgs); 
 			printf("-- End of Statistics --\n");
-			printf("\n");				
+			printf("\n");			
+
+
+
+
+
+			}		
+				
 		}				
 	}			
 
